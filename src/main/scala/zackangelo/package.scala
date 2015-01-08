@@ -117,10 +117,6 @@ package object zackangelo {
     }
   }
 
-//  pm2mapping("items" / Segment).apply({ itemId =>
-//    Seq.empty[RouteMapping[_]]
-//  })
-
   ("items" / Segment) -> { itemId =>
     OrderItemRouteHandler(itemId) {
       Seq(
@@ -130,44 +126,4 @@ package object zackangelo {
       )
     }
   }
-
-//  implicit def tuple2RouteMapping(t:Tuple2[PMatcher[_],RouteHandler]) =
-//    new RouteMapping {
-//      val path    = t._1
-//      val handler = t._2
-//    }
-
-//  val rm = ("orders" / Segment) { orderId =>
-//    OrderRouteHandler(orderId) {
-//      ("items" / Segment)    { _ => OrderItemRouteHandler(orderId) } ~
-//      ("customer" / Segment) { _ => OrderCustomerRouteHandler(orderId) }
-//    }
-//  }
-//
-//  val r = "orders" {
-//    Index               -> OrdersIndexRoute
-//    Path(Segment)       -> OrderItemRoute {
-//      Path("items")     -> OrderItemsRoute
-//      Path("customer")  -> OrderCustomerRoute
-//    }
-//  }
-
-//  class ConcreteNewRoute() extends NewRoute[String] {
-//    override val pm = "hello" / Segment / Segment
-
-//    pm.applyPath { (s0:String,s1:String) =>
-//      "String"
-//    }
-
-//    val aux = pm.applyPath2
-//    def applyP2(fn:aux.Fn) = ???
-//
-//    applyP2 { (s1,s2) =>
-//      "String"
-//    }
-
-//    def model(f:pm.FnAux#Fn) = ???
-//    model((s1: String, s2: String) => "hullo")
-//  }
-
 }

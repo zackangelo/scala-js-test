@@ -159,8 +159,6 @@ class RouterContext {
   def outletForFragment(el:dom.Element):Option[dom.Node] = Some(el)
 
   def enter(route:Route):Future[Unit] = {
-//    require(children(leaf) contains route)  || ApplicationRoute
-
     val leafOutlet = active.lastOption match {
       case Some(leaf) => leaf.outlet
       case None       => Some(rootElement) //no active routes, at root
@@ -193,8 +191,6 @@ class RouterContext {
   }
 
   def exit(route:Route):Unit = {
-//    require(route == leaf)
-
     window.console.log(s"Exiting route $route...")
 
     val state = active.pop()
