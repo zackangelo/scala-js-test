@@ -33,33 +33,6 @@ package object zackangelo {
   abstract class PMatcher[L <: HList] extends (Path => MatchResult[L]) { self =>
     type Fn
 
-//    (implicit ftp:FnToProduct.Aux[A, L => String])
-//need: (String :: String :: HNil) => String to (String,String) => String
-//    trait FnAux {
-//      type Fn
-//    }
-//
-//    class FnAcAux[A] {
-//      type Fn = A
-//    }
-//
-//    def applyPath[A](implicit ftp:FnToProduct.Aux[A, L => String]) = new FnAux {
-//      type Fn = A
-//    }
-//
-//    def applyPath2[A](implicit ftp:FnToProduct.Aux[A, L => String]) = new FnAcAux[A]
-//
-//    val FnAcAuxInst = applyPath2
-
-    type RRoute[R <: Route] = (path,R)
-
-    "orders" >> OrdersRoute.apply { state =>
-      Segment >> OrderByIdRoute.apply { state =>
-        "details" >> OrderItemRoute.apply ~
-        "items"   >> OrderItemsRoute.apply
-      }
-    }
-
     def /[R <: HList,O <: HList](right:PMatcher[R])
                                 (implicit p:Prepend.Aux[L, R, O]) =
       self ~ Slash ~ right
@@ -77,38 +50,11 @@ package object zackangelo {
           }
         }
       }
-
-//      trait inner[F] {
-//        type H0   = L
-//        type Fn0  = F
-//      }
-//    object inner {
-//      def apply[H <: HList,F](m:PMatcher[H])(implicit ftp: FnToProduct.Aux[F, H => String]):inner[H,F] =
-//        new inner[H,F](m)
-//    }
-//      type Aux[F, Out0] = inner[F] {
-//        type Fn0
-//        type H0
-//      }
-//      object inner {
-//        def apply[F](implicit ftp: FnToProduct.Aux[F,L => String]):Aux[F, L => String] = {
-//          new inner {
-//            type Fn0 = L => String
-//            type H0 = F
-//          }
-//        }
-//      }
   }
 
-  trait PMatcher0 extends PMatcher[HNil] {
-  }
-
-  trait PMatcher1[E1] extends PMatcher[E1 :: HNil] {
-//    type Fn = (E1) => String
-  }
-  trait PMatcher2[E1,E2] extends PMatcher[E1 :: E2 :: HNil] {
-//    type Fn = (E1, E2) => String
-  }
+  trait PMatcher0 extends PMatcher[HNil]
+  trait PMatcher1[E1] extends PMatcher[E1 :: HNil]
+  trait PMatcher2[E1,E2] extends PMatcher[E1 :: E2 :: HNil]
 
   trait SegmentMatcher[E1 <: HList] extends PMatcher[E1] {
     def extract(segment:String,remaining:String):MatchResult[E1]
@@ -149,22 +95,79 @@ package object zackangelo {
 
   }
 
-  class ConcreteNewRoute() extends NewRoute[String] {
-    override val pm = "hello" / Segment / Segment
+  trait RouteHandler {
+    def apply(children: => Seq[RouteMapping[_]]) = ???
+  }
+
+  case class OrderRouteHandler(orderId:String) extends RouteHandler
+  case class OrderItemRouteHandler(orderId:String) extends RouteHandler
+  case class OrderCustomerRouteHandler(orderId:String) extends RouteHandler
+
+  trait RouteMapping[F] {
+    val path:PMatcher[_]
+//    val handler:RouteHandler
+    def ->(f:F) = ???
+  }
+
+  implicit def pm2mapping[F,H <: HList](m:PMatcher[H])
+            (implicit ftp: FnToProduct.Aux[F, H => RouteHandler]):RouteMapping[F] = {
+    new RouteMapping[F] {
+      val path = m
+      override def ->(f:F) = ???
+    }
+  }
+
+//  pm2mapping("items" / Segment).apply({ itemId =>
+//    Seq.empty[RouteMapping[_]]
+//  })
+
+  ("items" / Segment) -> { itemId =>
+    OrderItemRouteHandler(itemId) {
+      Seq(
+        ("image" / Segment) -> { imageId =>
+          OrderCustomerRouteHandler(imageId)
+        }
+      )
+    }
+  }
+
+//  implicit def tuple2RouteMapping(t:Tuple2[PMatcher[_],RouteHandler]) =
+//    new RouteMapping {
+//      val path    = t._1
+//      val handler = t._2
+//    }
+
+//  val rm = ("orders" / Segment) { orderId =>
+//    OrderRouteHandler(orderId) {
+//      ("items" / Segment)    { _ => OrderItemRouteHandler(orderId) } ~
+//      ("customer" / Segment) { _ => OrderCustomerRouteHandler(orderId) }
+//    }
+//  }
+//
+//  val r = "orders" {
+//    Index               -> OrdersIndexRoute
+//    Path(Segment)       -> OrderItemRoute {
+//      Path("items")     -> OrderItemsRoute
+//      Path("customer")  -> OrderCustomerRoute
+//    }
+//  }
+
+//  class ConcreteNewRoute() extends NewRoute[String] {
+//    override val pm = "hello" / Segment / Segment
 
 //    pm.applyPath { (s0:String,s1:String) =>
 //      "String"
 //    }
 
-    val aux = pm.applyPath2
-    def applyP2(fn:aux.Fn) = ???
-
-    applyP2 { (s1,s2) =>
-      "String"
-    }
+//    val aux = pm.applyPath2
+//    def applyP2(fn:aux.Fn) = ???
+//
+//    applyP2 { (s1,s2) =>
+//      "String"
+//    }
 
 //    def model(f:pm.FnAux#Fn) = ???
 //    model((s1: String, s2: String) => "hullo")
-  }
+//  }
 
 }

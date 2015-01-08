@@ -19,10 +19,11 @@
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
+    <orderEntry type="library" name="SBT: com.scalatags:scalatags_sjs0.5_2.11:0.4.2:jar" level="project" />
+    <orderEntry type="library" name="SBT: name.myltsev:shapeless_sjs0.5_2.11:2.0.0:jar" level="project" />
+    <orderEntry type="library" name="SBT: org.scala-lang:scala-library:2.11.2:jar" level="project" />
+    <orderEntry type="library" name="SBT: org.scala-lang.modules.scalajs:scalajs-dom_sjs0.5_2.11:0.6:jar" level="project" />
+    <orderEntry type="library" name="SBT: org.scala-lang.modules.scalajs:scalajs-library_2.11:0.5.5:jar" level="project" />
     <orderEntry type="library" name="SBT: org.scala-lang:scala-library:2.11.2" level="project" />
-    <orderEntry type="library" name="SBT: org.scala-lang.modules.scalajs:scalajs-dom_sjs0.5_2.11:0.6" level="project" />
-    <orderEntry type="library" name="SBT: org.scala-lang.modules.scalajs:scalajs-library_2.11:0.5.5" level="project" />
-    <orderEntry type="library" name="SBT: com.scalatags:scalatags_sjs0.5_2.11:0.4.2" level="project" />
-    <orderEntry type="library" name="SBT: name.myltsev:shapeless_sjs0.5_2.11:2.0.0" level="project" />
   </component>
 </module>
