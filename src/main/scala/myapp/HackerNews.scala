@@ -3,13 +3,15 @@ package myapp
 import escalera.router._
 
 import scala.annotation.implicitNotFound
-
+import scala.scalajs.js.annotation.JSExport
+import org.scalajs.dom.window
 
 //spandrel
 
 /**
  * Created by zackangelo on 1/7/15.
  */
+@JSExport
 object HackerNews {
 
   import RouteMapping._
@@ -20,6 +22,8 @@ object HackerNews {
   case class StoryIndexRoute(storyId:String) extends RouteHandler
   case class StoryCommentsRoute(storyId:String) extends RouteHandler
   case class StoryDescriptionRoute(storyId:String) extends RouteHandler
+  case class UsersRoute() extends RouteHandler
+  case class UserRoute(userId:String) extends RouteHandler
 
   val path:String = "hello/world"
 
@@ -97,7 +101,16 @@ object HackerNews {
                                   (implicit ftp: FnToProduct.Aux[Fn0, (L) => R0]):RouteDef[L,R0]
   }
 
-  type RouteMatcher = PartialFunction[String, Tuple2[RouteHandler, String]]
+  case class RouteMatchResult(handler:RouteHandler, childMatcher:Option[RouteMatcher], remainingPath:String)
+
+  trait RouteMatcher extends PartialFunction[String, RouteMatchResult] {
+    def or(next:RouteMatcher):RouteMatcher = new OrRouteMatcher(this,next)
+  }
+
+  class OrRouteMatcher(a:RouteMatcher, b:RouteMatcher) extends RouteMatcher {
+    override def isDefinedAt(x: String): Boolean = a.isDefinedAt(x) || b.isDefinedAt(x)
+    override def apply(v1: String): RouteMatchResult = a.applyOrElse(v1,b)
+  }
 
   trait RouteDef[L <: HList,R <: RouteHandler] extends RouteMatcher { self =>
     val pattern:PathMatcher[L]
@@ -105,7 +118,10 @@ object HackerNews {
     def handler(segments:L):R
 
     def apply(path:String) = pattern.apply(path) match {
-      case Matched(segments,rest) => (handler(segments),rest)
+      case Matched(segments,rest) => {
+        val h = handler(segments)
+        RouteMatchResult(h, children(h), rest)
+      }
       case _ => throw new IllegalStateException(s"Matcher is invalid for path $path")
     }
 
@@ -113,8 +129,6 @@ object HackerNews {
       case Matched(_,_) => true
       case _            => false
     }
-
-    def or(next:RouteMatcher) = this.orElse(next)
 
     def children(rh:R):Option[RouteMatcher] = None
 
@@ -143,17 +157,48 @@ object HackerNews {
     }
   }
 
-  val rr =
+  val router3 = route2("users") -> UsersRoute() then { users =>
+    route2(Segment) -> (UserRoute(_))
+  }
+
+  @JSExport
+  val router2 =
     route2("stories") -> StoriesRoute() then { stories =>
       route2(Segment) -> (StoryRoute(_)) then { story =>
-        route2(index)         -> StoryIndexRoute(story.storyId)
+        route2(index)         -> StoryIndexRoute(story.storyId) or
         route2("comments")    -> StoryCommentsRoute(story.storyId) or
         route2("description") -> StoryDescriptionRoute(story.storyId)
       }
+    } or (route2("users") -> UsersRoute() then { users =>
+      route2(Segment) -> (UserRoute(_))
+    })
+
+
+
+  def applyRouter(path:String, router:RouteMatcher, matched:List[RouteHandler]):List[RouteHandler] = {
+    window.console.log(s"remaining = $path")
+    if(path.isEmpty) {
+      matched
+    } else {
+      router.lift(path) match {
+        case Some(RouteMatchResult(handler, Some(child), remain)) =>
+          applyRouter(remain, child, handler :: matched)
+        case Some(RouteMatchResult(handler, None, remain)) if remain.isEmpty =>
+          handler :: matched
+        case _ =>
+          List.empty
+      }
     }
+  }
 
+  @JSExport
+  def applyRouter(path:String):List[RouteHandler] =
+    applyRouter(path, router2, List.empty)
 
-  rr("comments/2")
+  @JSExport
+  val matched = applyRouter("stories/230/comments/2", router2, List.empty)
+
+//  rr("comments/2")
 
   object route1 {
     def apply[L0 <: HList](pmatcher:PathMatcher[L0]) = new RouteAux[L0] {
