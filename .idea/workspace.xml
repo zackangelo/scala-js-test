@@ -3,7 +3,7 @@
   <component name="ChangeListManager">
     <list default="true" id="ae0c7d84-1c6a-4c66-8763-48ae9eec7759" name="Default" comment="">
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/main/scala/myapp/HackerNews.scala" afterPath="$PROJECT_DIR$/src/main/scala/myapp/HackerNews.scala" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/main/scala/escalera/router/PathMatcher.scala" afterPath="$PROJECT_DIR$/src/main/scala/escalera/router/PathMatcher.scala" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
     </list>
     <ignored path="Example.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -46,12 +46,24 @@
       <file leaf-file-name="HackerNews.scala" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/src/main/scala/myapp/HackerNews.scala">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="-0.02266289" vertical-offset="2201" max-vertical-offset="2926">
-              <caret line="115" column="37" selection-start-line="115" selection-start-column="37" selection-end-line="115" selection-end-column="37" />
+            <state vertical-scroll-proportion="0.51983005" vertical-offset="1419" max-vertical-offset="2679">
+              <caret line="94" column="5" selection-start-line="94" selection-start-column="5" selection-end-line="94" selection-end-column="5" />
               <folding>
                 <element signature="e#15#39#0" expanded="true" />
                 <element signature="e#246#267#0" expanded="true" />
                 <element signature="e#777#795#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="Dsl.scala" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/main/scala/escalera/router/Dsl.scala">
+          <provider selected="true" editor-type-id="text-editor">
+            <state vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="589">
+              <caret line="25" column="0" selection-start-line="25" selection-start-column="0" selection-end-line="25" selection-end-column="0" />
+              <folding>
+                <element signature="e#25#43#0" expanded="true" />
               </folding>
             </state>
           </provider>
@@ -87,9 +99,9 @@
     <detection-done>true</detection-done>
   </component>
   <component name="ProjectFrameBounds">
-    <option name="x" value="625" />
+    <option name="x" value="327" />
     <option name="y" value="23" />
-    <option name="width" value="794" />
+    <option name="width" value="1092" />
     <option name="height" value="803" />
   </component>
   <component name="ProjectInspectionProfilesVisibleTreeState">
@@ -525,15 +537,15 @@
       <workItem from="1420320592008" duration="8000" />
       <workItem from="1420325855131" duration="5338000" />
       <workItem from="1420645635333" duration="37667000" />
-      <workItem from="1421011687908" duration="5583000" />
+      <workItem from="1421011687908" duration="5831000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="129804000" />
+    <option name="totallyTimeSpent" value="130052000" />
   </component>
   <component name="ToolWindowManager">
-    <frame x="625" y="23" width="794" height="803" extended-state="6" />
+    <frame x="327" y="23" width="1092" height="803" extended-state="6" />
     <editor active="true" />
     <layout>
       <window_info id="Palette&#9;" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
@@ -944,16 +956,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/scala/escalera/router/Dsl.scala">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="589">
-          <caret line="6" column="38" selection-start-line="6" selection-start-column="38" selection-end-line="6" selection-end-column="38" />
-          <folding>
-            <element signature="e#25#43#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="jar://$USER_HOME$/.ivy2/cache/org.scala-lang/scala-library/srcs/scala-library-2.11.2-sources.jar!/scala/PartialFunction.scala">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0" vertical-offset="2520" max-vertical-offset="5358">
@@ -988,10 +990,20 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/src/main/scala/escalera/router/Dsl.scala">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="589">
+          <caret line="25" column="0" selection-start-line="25" selection-start-column="0" selection-end-line="25" selection-end-column="0" />
+          <folding>
+            <element signature="e#25#43#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/src/main/scala/myapp/HackerNews.scala">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="-0.02266289" vertical-offset="2201" max-vertical-offset="2926">
-          <caret line="115" column="37" selection-start-line="115" selection-start-column="37" selection-end-line="115" selection-end-column="37" />
+        <state vertical-scroll-proportion="0.51983005" vertical-offset="1419" max-vertical-offset="2679">
+          <caret line="94" column="5" selection-start-line="94" selection-start-column="5" selection-end-line="94" selection-end-column="5" />
           <folding>
             <element signature="e#15#39#0" expanded="true" />
             <element signature="e#246#267#0" expanded="true" />

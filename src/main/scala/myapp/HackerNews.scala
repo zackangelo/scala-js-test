@@ -131,18 +131,5 @@ object HackerNews {
   @JSExport
   def applyRouter(path: String): List[RouteHandler] =
     applyRouter(path, router2, List.empty)
-
-  @JSExport
-  val matched = applyRouter("stories/230/comments/2", router2, List.empty)
-
-  val pattern = "stories" / Segment / "comments" / Segment
-
-  val pattern2 = "stories" / Segment
-
-  @JSExport
-  def testPattern(s:String) = pattern(s)
-
-  @JSExport
-  def testPattern2(s:String) = pattern2(s)
 }
 
