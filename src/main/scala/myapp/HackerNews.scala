@@ -1,10 +1,12 @@
 package myapp
 
+import escalera.Application
 import escalera.router._
-
 import scala.annotation.implicitNotFound
 import scala.scalajs.js.annotation.JSExport
 import org.scalajs.dom.window
+
+import scalatags.JsDom.all._
 
 //spandrel
 
@@ -12,21 +14,30 @@ import org.scalajs.dom.window
  * Created by zackangelo on 1/7/15.
  */
 @JSExport
-object HackerNews {
+object HackerNews extends Application {
   import PathMatcher._
-  import escalera.router.route
 
-  case class StoriesRoute() extends RouteHandler
-  case class StoryRoute(storyId: String) extends RouteHandler
-  case class StoryIndexRoute(storyId: String) extends RouteHandler
-  case class StoryCommentsRoute(storyId: String) extends RouteHandler
-  case class StoryCommentRoute() extends RouteHandler
-  case class StoryDescriptionRoute(storyId: String) extends RouteHandler
-  case class UsersRoute() extends RouteHandler
-  case class UserRoute(userId: String) extends RouteHandler
+  trait TestRoute extends Route[String] {
+    import scala.concurrent.Future
+
+    def state = Future.successful("Hello")
+    def render(s:String) = Future.successful(div(
+      `class`:="test-route",
+      div(s)
+    ).render)
+  }
+
+  case class StoriesRoute() extends TestRoute
+  case class StoryRoute(storyId: String) extends TestRoute
+  case class StoryIndexRoute(storyId: String) extends TestRoute
+  case class StoryCommentsRoute(storyId: String) extends TestRoute
+  case class StoryCommentRoute() extends TestRoute
+  case class StoryDescriptionRoute(storyId: String) extends TestRoute
+  case class UsersRoute() extends TestRoute
+  case class UserRoute(userId: String) extends TestRoute
 
   @JSExport
-  val router2 =
+  def root =
     route("stories") -> StoriesRoute() then { stories =>
       route(Segment) -> (StoryRoute(_)) then { story =>
         route("comments") -> StoryCommentsRoute(story.storyId) then { comments =>
@@ -37,27 +48,5 @@ object HackerNews {
     } or (route("users") -> UsersRoute() then { users =>
       route(Segment) -> (UserRoute(_))
     })
-
-
-  def applyRouter(path: String, router: RouteMatcher, matched: List[RouteHandler]): List[RouteHandler] = {
-    if (path.isEmpty) {
-      matched
-    } else {
-      router.lift(path) match {
-        case Some(RouteMatchResult(handler, Some(child), remain)) =>
-          applyRouter(remain, child, handler :: matched)
-        case Some(RouteMatchResult(handler, None, remain)) if remain.isEmpty =>
-          handler :: matched
-        case _ if path.isEmpty =>
-          matched
-        case _ =>
-          List.empty
-      }
-    }
-  }
-
-  @JSExport
-  def applyRouter(path: String): List[RouteHandler] =
-    applyRouter(path, router2, List.empty)
 }
 

@@ -7,37 +7,36 @@ import org.scalajs.dom.window
 import scala.scalajs.concurrent.JSExecutionContext.Implicits.queue
 
 import scala.concurrent.Future
+import scala.scalajs.js.annotation.JSExport
 
 trait Router {
   private[router] implicit val context = new RouterContext()
 
-  def routesForUrl(url:String):List[Route] = {
-
-    @tailrec
-    def matchSegments(root:Route, segments:List[String], matched:List[Route]):List[Route] = {
-      segments match {
-        case next :: rest =>
-          val nextRoute = context.children(root).find(_.path == next).getOrElse {
-            throw new IllegalStateException(s"No route found for URL $url")
-          }
-
-          matchSegments(nextRoute, rest, matched :+ nextRoute)
-        case Nil => matched
+  def applyRouter(path: String, router: RouteMatcher, matched: List[Route[_]]): List[Route[_]] = {
+    if (path.isEmpty) {
+      matched
+    } else {
+      router.lift(path) match {
+        case Some(RouteMatchResult(handler, Some(child), remain)) =>
+          applyRouter(remain, child, handler :: matched)
+        case Some(RouteMatchResult(handler, None, remain)) if remain.isEmpty =>
+          handler :: matched
+        case _ if path.isEmpty =>
+          matched
+        case _ =>
+          List.empty
       }
     }
-
-    if(url.isEmpty) {
-      List(rootRoute)
-    } else {
-      matchSegments(rootRoute, url.split("/").toList, List(rootRoute))
-    }
   }
+
+  def routesForUrl(path:String):List[Route[_]] =
+    applyRouter(path, rootRoute, List.empty).reverse
 
   def handleUrlChange(url:String) = {
     window.console.log(s"Transitioning to URL $url...")
 
     val activeRoutes = context.activeRoutes.reverse
-    val targetRoutes:List[Route] = routesForUrl(url)
+    val targetRoutes = routesForUrl(url)
 
     window.console.log(s"Routes for URL: $targetRoutes")
 
@@ -67,6 +66,18 @@ trait Router {
     }
   }
 
-  def root:Route
+  @JSExport
+  def startRouting() = {
+    window.console.log(s"Starting router for ${getClass.getName}...")
+
+    window.onhashchange = { ev:Event =>
+      handleUrlChange(window.location.hash.substring(1))
+    }
+
+    handleUrlChange(window.location.hash.substring(1))
+  }
+
+  def root:RouteMatcher
+
   private lazy val rootRoute = root
 }

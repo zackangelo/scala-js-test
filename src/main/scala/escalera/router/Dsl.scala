@@ -1,18 +1,23 @@
 package escalera.router
 
+import org.scalajs.dom
 import shapeless._
 import shapeless.ops.function.FnToProduct
+import scala.concurrent.Future
 
-trait RouteHandler
+trait Route[S] {
+  def state:Future[S]
+  def render(state:S):Future[dom.Element]
+}
 
 trait RoutePattern[L <: HList] {
   val pattern: PathMatcher[L]
-  def ->[R0 <: RouteHandler](rh: => R0): RouteDef[L, R0]
-  def ->[Fn0, R0 <: RouteHandler](f: Fn0)
+  def ->[R0 <: Route[_]](rh: => R0): RouteDef[L, R0]
+  def ->[Fn0, R0 <: Route[_]](f: Fn0)
                                  (implicit ftp: FnToProduct.Aux[Fn0, (L) => R0]): RouteDef[L, R0]
 }
 
-case class RouteMatchResult(handler: RouteHandler, childMatcher: Option[RouteMatcher], remainingPath: String)
+case class RouteMatchResult(handler: Route[_], childMatcher: Option[RouteMatcher], remainingPath: String)
 
 trait RouteMatcher extends PartialFunction[String, RouteMatchResult] {
   def or(next: RouteMatcher): RouteMatcher = new OrRouteMatcher(this, next)
@@ -23,7 +28,7 @@ class OrRouteMatcher(a: RouteMatcher, b: RouteMatcher) extends RouteMatcher {
   override def apply(v1: String): RouteMatchResult = a.applyOrElse(v1, b)
 }
 
-trait RouteDef[L <: HList, R <: RouteHandler] extends RouteMatcher { self =>
+trait RouteDef[L <: HList, R <: Route[_]] extends RouteMatcher { self =>
   val pattern: PathMatcher[L]
 
   def handler(segments: L): R
@@ -50,19 +55,21 @@ trait RouteDef[L <: HList, R <: RouteHandler] extends RouteMatcher { self =>
   }
 }
 
-object route {
-  def apply[L0 <: HList](pmatcher: PathMatcher[L0]) = new RoutePattern[L0] {
+trait Dsl {
+  def route[L0 <: HList](pmatcher: PathMatcher[L0]) = new RoutePattern[L0] {
     val pattern: PathMatcher[L0] = pmatcher
 
-    def ->[R0 <: RouteHandler](rh: => R0): RouteDef[L0, R0] = new RouteDef[L0, R0] {
+    def ->[R0 <: Route[_]](rh: => R0): RouteDef[L0, R0] = new RouteDef[L0, R0] {
       val pattern = pmatcher
+
       def handler(segments: L0): R0 = rh
     }
 
-    def ->[Fn0, R0 <: RouteHandler](f: Fn0)
-                                   (implicit ftp: FnToProduct.Aux[Fn0, (L0) => R0]) =
+    def ->[Fn0, R0 <: Route[_]](f: Fn0)
+                               (implicit ftp: FnToProduct.Aux[Fn0, (L0) => R0]) =
       new RouteDef[L0, R0] {
         val pattern: PathMatcher[L0] = pmatcher
+
         def handler(segments: L0): R0 = ftp(f)(segments)
       }
   }

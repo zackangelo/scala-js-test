@@ -9,23 +9,19 @@ import scala.scalajs.concurrent.JSExecutionContext.Implicits.queue
  * Created by zackangelo on 1/7/15.
  */
 
-case class ActiveRouteState(route:Route,
+case class ActiveRouteState(route:Route[_],
                             element:Option[dom.Node],
-                            outlet:Option[dom.Node],
-                            children:List[Route])
+                            outlet:Option[dom.Node])
 
 class RouterContext {
   import scala.collection.mutable
   import scalatags.JsDom.all._
 
-  private[router] val children  = mutable.Map.empty[Route, List[Route]]
-  private[router] val parents   = mutable.Map.empty[Route, Route]
   private[router] val active    = new mutable.Stack[ActiveRouteState]
-
   private[router] val rootElement = div(`class`:="application").render
 
-  def activeRoutes:List[Route] = active.map(_.route).toList
-  def leaf:Route = active.last.route
+  def activeRoutes:List[Route[_]] = active.map(_.route).toList
+  def leaf:Route[_] = active.last.route
 
   def outletForFragment(el:dom.Element):Option[dom.Node] = Some(el)
 
@@ -35,7 +31,7 @@ class RouterContext {
    * @param route
    * @return
    */
-  def enter(route:Route):Future[Unit] = {
+  def enter[S](route:Route[S]):Future[Unit] = {
     val leafOutlet = active.lastOption match {
       case Some(leaf) => leaf.outlet
       case None       => Some(rootElement) //no active routes, at root
@@ -44,7 +40,7 @@ class RouterContext {
     window.console.log(s"Entering route $route...")
 
     for {
-      m   <- route.model
+      m   <- route.state
       el  <- route.render(m)
     } yield {
       val node = leafOutlet map {
@@ -53,13 +49,13 @@ class RouterContext {
 
       val childOutlet = outletForFragment(el)
 
-      active.push(ActiveRouteState(route, node, childOutlet, List.empty))
+      active.push(ActiveRouteState(route, node, childOutlet))
 
       ()
     }
   }
 
-  def enterAll(routes:List[Route]):Future[Unit] = {
+  def enterAll(routes:List[Route[_]]):Future[Unit] = {
     routes match {
       case head :: Nil  => enter(head)
       case head :: tail => enter(head) flatMap(_ => enterAll(tail))
@@ -67,7 +63,7 @@ class RouterContext {
     }
   }
 
-  def exit(route:Route):Unit = {
+  def exit(route:Route[_]):Unit = {
     window.console.log(s"Exiting route $route...")
 
     val state = active.pop()
@@ -75,12 +71,5 @@ class RouterContext {
     state.element.foreach { n =>
       n.parentNode.removeChild(n)
     }
-  }
-
-  def register(route:Route, parent:Route) = {
-    window.console.log(s"Registering route $route...")
-    val childs = children.getOrElse(parent, List.empty[Route])
-    children += (parent -> (childs :+ route))
-    parents += (route -> parent)
   }
 }
