@@ -21,20 +21,17 @@ object HackerNews {
   case class StoryRoute(storyId: String) extends RouteHandler
   case class StoryIndexRoute(storyId: String) extends RouteHandler
   case class StoryCommentsRoute(storyId: String) extends RouteHandler
+  case class StoryCommentRoute() extends RouteHandler
   case class StoryDescriptionRoute(storyId: String) extends RouteHandler
   case class UsersRoute() extends RouteHandler
   case class UserRoute(userId: String) extends RouteHandler
 
   import shapeless._
-  import shapeless.ops.hlist.Prepend
   import shapeless.ops.function.FnToProduct
-  import shapeless.ops.function.FnFromProduct
 
   trait RoutePattern[L <: HList] {
     val pattern: PathMatcher[L]
-
     def ->[R0 <: RouteHandler](rh: => R0): RouteDef[L, R0]
-
     def ->[Fn0, R0 <: RouteHandler](f: Fn0)
                                    (implicit ftp: FnToProduct.Aux[Fn0, (L) => R0]): RouteDef[L, R0]
   }
@@ -47,7 +44,6 @@ object HackerNews {
 
   class OrRouteMatcher(a: RouteMatcher, b: RouteMatcher) extends RouteMatcher {
     override def isDefinedAt(x: String): Boolean = a.isDefinedAt(x) || b.isDefinedAt(x)
-
     override def apply(v1: String): RouteMatchResult = a.applyOrElse(v1, b)
   }
 
@@ -57,8 +53,10 @@ object HackerNews {
 
     def handler(segments: L): R
 
-    def apply(path: String) = pattern.apply(path) match {
+    def apply(path: String) = pattern(path) match {
       case Matched(segments, rest) => {
+        window.console.log(s"path = $path, segments = $segments, rest = $rest")
+
         val h = handler(segments)
         RouteMatchResult(h, children(h), rest)
       }
@@ -74,9 +72,7 @@ object HackerNews {
 
     def then[RH <: RouteHandler](childFn: R => RouteMatcher) = new RouteDef[L, R] {
       val pattern = self.pattern
-
       def handler(segments: L) = self.handler(segments)
-
       override def children(rh: R) = Some(childFn(rh))
     }
   }
@@ -87,7 +83,6 @@ object HackerNews {
 
       def ->[R0 <: RouteHandler](rh: => R0): RouteDef[L0, R0] = new RouteDef[L0, R0] {
         val pattern = pmatcher
-
         def handler(segments: L0): R0 = rh
       }
 
@@ -95,7 +90,6 @@ object HackerNews {
                                      (implicit ftp: FnToProduct.Aux[Fn0, (L0) => R0]) =
         new RouteDef[L0, R0] {
           val pattern: PathMatcher[L0] = pmatcher
-
           def handler(segments: L0): R0 = ftp(f)(segments)
         }
     }
@@ -109,7 +103,9 @@ object HackerNews {
   val router2 =
     route2("stories") -> StoriesRoute() then { stories =>
       route2(Segment) -> (StoryRoute(_)) then { story =>
-        route2("comments") -> StoryCommentsRoute(story.storyId) or
+        route2("comments") -> StoryCommentsRoute(story.storyId) then { comments =>
+          route2(Segment) -> StoryCommentRoute()
+        } or
         route2("description") -> StoryDescriptionRoute(story.storyId)
       }
     } or (route2("users") -> UsersRoute() then { users =>
@@ -118,7 +114,6 @@ object HackerNews {
 
 
   def applyRouter(path: String, router: RouteMatcher, matched: List[RouteHandler]): List[RouteHandler] = {
-    window.console.log(s"remaining = $path")
     if (path.isEmpty) {
       matched
     } else {
@@ -140,5 +135,14 @@ object HackerNews {
   @JSExport
   val matched = applyRouter("stories/230/comments/2", router2, List.empty)
 
+  val pattern = "stories" / Segment / "comments" / Segment
+
+  val pattern2 = "stories" / Segment
+
+  @JSExport
+  def testPattern(s:String) = pattern(s)
+
+  @JSExport
+  def testPattern2(s:String) = pattern2(s)
 }
 

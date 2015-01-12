@@ -5,6 +5,8 @@ import shapeless.ops.hlist._
 
 import scala.language.implicitConversions
 
+import org.scalajs.dom.window
+
 sealed trait MatchResult[T <: HList] {
   val remaining:String
 }
@@ -49,9 +51,11 @@ trait SegmentMatcher[E1 <: HList] extends PathMatcher[E1] {
   def extract(segment:String,remaining:String):MatchResult[E1]
 
   def apply(in:String):MatchResult[E1] = {
-    val (segment,remaining) = in.indexOf(PathMatcher.Separator) match {
-      case x if x > 0 => (in.take(x),in.drop(x))
-      case x          => (in, "")
+    val p = if(in.charAt(0) == PathMatcher.Separator) in.drop(1) else in
+
+    val (segment,remaining) = p.indexOf(PathMatcher.Separator) match {
+      case x if x > -1 => (p.take(x), p.drop(x))
+      case x          => (p, "")
     }
 
     extract(segment,remaining)
